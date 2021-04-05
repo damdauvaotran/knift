@@ -7,7 +7,9 @@ import dotenv from 'dotenv';
 dotenv.config({ path: '.env' });
 import http from 'http';
 import app from './src/main/app';
+import socket from './src/main/socket';
 import { env } from './src/main/constants';
+import { socket } from 'socket.io';
 
 /**
  * Get port from environment and store in Express.
@@ -21,6 +23,12 @@ app.set('port', port);
  */
 
 const server = http.createServer(app);
+
+/**
+ * Create socket.io server.
+ */
+
+socket.init(server);
 
 /**
  * Listen on provided port, on all network interfaces.

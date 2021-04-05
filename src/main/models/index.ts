@@ -1,4 +1,6 @@
-const Sequelize = require('sequelize');
+import {Sequelize} from 'sequelize';
+
+import { env } from '../constants';
 
 // Single model
 const UserModel = require('./users_model');
@@ -14,7 +16,7 @@ const FilmActorModel = require('./many_to_many/films_actors_model');
 const FilmCategoryModel = require('./many_to_many/films_categories_model');
 const FilmListModel = require('./many_to_many/films_lists_model');
 
-// Initial data for dev purpose
+// Seeding data for dev purpose
 const migrationFilm = require('../mock/films_data');
 const migrationEpList = require('../mock/episode_data');
 const migrationProcess = require('../mock/progress_data');
@@ -26,11 +28,11 @@ const migrationFilmActor = require('../mock/film_actor_data');
 const migrationFilmCategory = require('../mock/film_category_data');
 const migrationFilmList = require('../mock/film_list_data');
 
-const DATABASE_NAME = process.env.DATABASE_NAME || 'math_app';
-const DATABASE_USERNAME = process.env.DATABASE_USERNAME || 'root';
-const DATABASE_PASSWORD = process.env.DATABASE_PASSWORD || '12345678';
-const DATABASE_URL = process.env.DATABASE_URL || 'localhost';
-const DATABASE_PORT = process.env.DATABASE_PORT || '3306';
+const DATABASE_NAME = env.DATABASE_NAME || 'math_app';
+const DATABASE_USERNAME = env.DATABASE_USERNAME || 'root';
+const DATABASE_PASSWORD = env.DATABASE_PASSWORD || '12345678';
+const DATABASE_URL = env.DATABASE_URL || 'localhost';
+const DATABASE_PORT = env.DATABASE_PORT || 3306;
 
 const db = new Sequelize(DATABASE_NAME, DATABASE_USERNAME, DATABASE_PASSWORD, {
   host: DATABASE_URL,
@@ -39,7 +41,7 @@ const db = new Sequelize(DATABASE_NAME, DATABASE_USERNAME, DATABASE_PASSWORD, {
   timezone: '+07:00',
   retry: {
     max: 100,
-    timeout: 60 * 60 * 1000,
+    // timeout: 60 * 60 * 1000,
   },
   pool: {
     max: 10,
@@ -85,32 +87,31 @@ Progresses.belongsTo(Users, { foreignKey: 'userId' });
 
 Films.belongsToMany(Categories, {
   through: FilmsCategories,
-  foreignKey: 'film_id',
+  foreignKey: 'filmId',
 });
 Categories.belongsToMany(Films, {
   through: FilmsCategories,
-  foreignKey: 'category_id',
+  foreignKey: 'categoryId',
 });
 
-Films.belongsToMany(Actors, { through: FilmsActors, foreignKey: 'film_id' });
-Actors.belongsToMany(Films, { through: FilmsActors, foreignKey: 'actor_id' });
+Films.belongsToMany(Actors, { through: FilmsActors, foreignKey: 'filmId' });
+Actors.belongsToMany(Films, { through: FilmsActors, foreignKey: 'actorId' });
 
 Users.hasMany(Lists, { foreignKey: 'userId' });
 Lists.belongsTo(Users, { foreignKey: 'userId' });
 
-Lists.belongsToMany(Films, { through: FilmsLists, foreignKey: 'list_id' });
-Films.belongsToMany(Lists, { through: FilmsLists, foreignKey: 'film_id' });
+Lists.belongsToMany(Films, { through: FilmsLists, foreignKey: 'listId' });
+Films.belongsToMany(Lists, { through: FilmsLists, foreignKey: 'filmId' });
 
 const init = () => {
-  console.log('Initializing database')
-  db.sync({ force: false }).then(async () => {
+  console.log('Initializing database');
+  db.sync({ force: env.DATABASE_FORCE_UPDATE }).then(async () => {
     console.log('Database & tables created!');
     const listFilm = await Films.findAll();
 
-    // Import default dev data
-    // Todo: Delete this in production
+    // Seeding data
     if (listFilm.length === 0) {
-      console.log('Empty film list, Start migrate data');
+      console.log('Empty film list, Start seeding data');
       await Users.bulkCreate(migrationUser);
       await Films.bulkCreate(migrationFilm);
       await Episodes.bulkCreate(migrationEpList);
@@ -138,5 +139,5 @@ export default {
   FilmsActors,
   FilmsCategories,
   FilmsLists,
-  init
+  init,
 };
