@@ -1,32 +1,32 @@
-import {Sequelize} from 'sequelize';
+import { Sequelize, ModelOptions } from 'sequelize';
 
 import { env } from '../constants';
 
 // Single model
-const UserModel = require('./users_model');
-const FilmModel = require('./films_model');
-const EpisodeModel = require('./episodes_model');
-const ProgressModel = require('./progresses_model');
-const CategoryModel = require('./categories_model');
-const ActorModel = require('./actors_model');
-const ListModel = require('./lists_model');
+import UserModel from './user_model';
+import RoleModel from './role_model';
+import PermissionModel from './permission_model';
+import ClassModel from './class_model';
+import ConferenceModel from './conference_model';
+import LessonModel from './lesson_model';
+import SubjectModel from './subject_model';
 
 // Many to many model
-const FilmActorModel = require('./many_to_many/films_actors_model');
-const FilmCategoryModel = require('./many_to_many/films_categories_model');
-const FilmListModel = require('./many_to_many/films_lists_model');
+
+import RolePermissionModel from './many_to_many/role_permission_model';
+import UserClassModel from './many_to_many/user_class_model';
 
 // Seeding data for dev purpose
-const migrationFilm = require('../mock/films_data');
-const migrationEpList = require('../mock/episode_data');
-const migrationProcess = require('../mock/progress_data');
-const migrationUser = require('../mock/user_data');
-const migrationActor = require('../mock/actor_data');
-const migrationCategory = require('../mock/category_data');
-const migrationList = require('../mock/list_data');
-const migrationFilmActor = require('../mock/film_actor_data');
-const migrationFilmCategory = require('../mock/film_category_data');
-const migrationFilmList = require('../mock/film_list_data');
+// const migrationFilm = require('../mock/films_data');
+// const migrationEpList = require('../mock/episode_data');
+// const migrationProcess = require('../mock/progress_data');
+// const migrationUser = require('../mock/user_data');
+// const migrationActor = require('../mock/actor_data');
+// const migrationCategory = require('../mock/category_data');
+// const migrationList = require('../mock/list_data');
+// const migrationFilmActor = require('../mock/film_actor_data');
+// const migrationFilmCategory = require('../mock/film_category_data');
+// const migrationFilmList = require('../mock/film_list_data');
 
 const DATABASE_NAME = env.DATABASE_NAME || 'math_app';
 const DATABASE_USERNAME = env.DATABASE_USERNAME || 'root';
@@ -34,110 +34,104 @@ const DATABASE_PASSWORD = env.DATABASE_PASSWORD || '12345678';
 const DATABASE_URL = env.DATABASE_URL || 'localhost';
 const DATABASE_PORT = env.DATABASE_PORT || 3306;
 
-const db = new Sequelize(DATABASE_NAME, DATABASE_USERNAME, DATABASE_PASSWORD, {
-  host: DATABASE_URL,
-  port: DATABASE_PORT,
-  dialect: 'mysql',
-  timezone: '+07:00',
-  retry: {
-    max: 100,
-    // timeout: 60 * 60 * 1000,
-  },
-  pool: {
-    max: 10,
-    min: 0,
-    acquire: 30000,
-    idle: 10000,
-  },
-});
+const db: Sequelize = new Sequelize(
+  DATABASE_NAME,
+  DATABASE_USERNAME,
+  DATABASE_PASSWORD,
+  {
+    host: DATABASE_URL,
+    port: DATABASE_PORT,
+    dialect: 'mysql',
+    timezone: '+07:00',
+    retry: {
+      max: 100,
+      // timeout: 60 * 60 * 1000,
+    },
+    pool: {
+      max: 10,
+      min: 0,
+      acquire: 30000,
+      idle: 10000,
+    },
+  }
+);
 
-const tableConfig = {
+const tableConfig: ModelOptions = {
   underscored: true,
   timestamps: true,
-  sequelize: db,
+  // sequelize: db,
   charset: 'utf8',
   collate: 'utf8_general_ci',
   defaultScope: {
-    attributes: { exclude: ['createdAt', 'updatedAt'] },
+    attributes: {
+      exclude: ['createdAt', 'updatedAt'],
+    },
   },
 };
 
 // Single table
-const Users = UserModel(db, tableConfig);
-const Films = FilmModel(db, tableConfig);
-const Episodes = EpisodeModel(db, tableConfig);
-const Progresses = ProgressModel(db, tableConfig);
-const Categories = CategoryModel(db, tableConfig);
-const Actors = ActorModel(db, tableConfig);
-const Lists = ListModel(db, tableConfig);
+const User = UserModel(db, tableConfig);
+const Role = RoleModel(db, tableConfig);
+const Permission = PermissionModel(db, tableConfig);
+const Class = ClassModel(db, tableConfig);
+const Conference = ConferenceModel(db, tableConfig);
+const Lesson = LessonModel(db, tableConfig);
+const Subject = SubjectModel(db, tableConfig);
 
 // Many to many table
-const FilmsActors = FilmActorModel(db, tableConfig);
-const FilmsCategories = FilmCategoryModel(db, tableConfig);
-const FilmsLists = FilmListModel(db, tableConfig);
+const RolePermission = RolePermissionModel(db, tableConfig);
+const UserClass = UserClassModel(db, tableConfig);
 
-Films.hasMany(Episodes, { foreignKey: 'filmId' });
-Episodes.belongsTo(Films, { foreignKey: 'filmId' });
+Role.hasMany(User, { foreignKey: 'roleId' });
+User.belongsTo(Role, { foreignKey: 'roleId' });
 
-Episodes.hasMany(Progresses, { foreignKey: 'epId' });
-Progresses.belongsTo(Episodes, { foreignKey: 'epId' });
+Subject.hasMany(Class, { foreignKey: 'subjectId' });
+Class.belongsTo(Class, { foreignKey: 'subjectId' });
 
-Users.hasMany(Progresses, { foreignKey: 'userId' });
-Progresses.belongsTo(Users, { foreignKey: 'userId' });
+Class.hasMany(Lesson, { foreignKey: 'classId' });
+Lesson.belongsTo(Class, { foreignKey: 'classId' });
 
-Films.belongsToMany(Categories, {
-  through: FilmsCategories,
-  foreignKey: 'filmId',
+Lesson.hasMany(Conference, { foreignKey: 'lessonId' });
+Conference.belongsTo(Lesson, { foreignKey: 'lessonId' });
+
+Role.belongsToMany(Permission, {
+  through: RolePermission,
+  foreignKey: 'roleId',
 });
-Categories.belongsToMany(Films, {
-  through: FilmsCategories,
-  foreignKey: 'categoryId',
+Permission.belongsToMany(Role, {
+  through: RolePermission,
+  foreignKey: 'permissionId',
 });
 
-Films.belongsToMany(Actors, { through: FilmsActors, foreignKey: 'filmId' });
-Actors.belongsToMany(Films, { through: FilmsActors, foreignKey: 'actorId' });
-
-Users.hasMany(Lists, { foreignKey: 'userId' });
-Lists.belongsTo(Users, { foreignKey: 'userId' });
-
-Lists.belongsToMany(Films, { through: FilmsLists, foreignKey: 'listId' });
-Films.belongsToMany(Lists, { through: FilmsLists, foreignKey: 'filmId' });
+User.belongsToMany(Class, { through: UserClass, foreignKey: 'userId' });
+Class.belongsToMany(User, { through: UserClass, foreignKey: 'classId' });
 
 const init = () => {
   console.log('Initializing database');
   db.sync({ force: env.DATABASE_FORCE_UPDATE }).then(async () => {
     console.log('Database & tables created!');
-    const listFilm = await Films.findAll();
+    // const listFilm = await Films.findAll();
 
-    // Seeding data
-    if (listFilm.length === 0) {
-      console.log('Empty film list, Start seeding data');
-      await Users.bulkCreate(migrationUser);
-      await Films.bulkCreate(migrationFilm);
-      await Episodes.bulkCreate(migrationEpList);
-      await Progresses.bulkCreate(migrationProcess);
-      await Actors.bulkCreate(migrationActor);
-      await Categories.bulkCreate(migrationCategory);
-      await Lists.bulkCreate(migrationList);
-      await FilmsCategories.bulkCreate(migrationFilmCategory);
-      await FilmsActors.bulkCreate(migrationFilmActor);
-      await FilmsLists.bulkCreate(migrationFilmList);
-    } else {
-      console.log('Db has exist, Migration canceled');
-    }
+    // // Seeding data
+    // if (listFilm.length === 0) {
+    //   console.log('Empty film list, Start seeding data');
+    //   await Users.bulkCreate(migrationUser);
+    //   await Films.bulkCreate(migrationFilm);
+    //   await Episodes.bulkCreate(migrationEpList);
+    //   await Progresses.bulkCreate(migrationProcess);
+    //   await Actors.bulkCreate(migrationActor);
+    //   await Categories.bulkCreate(migrationCategory);
+    //   await Lists.bulkCreate(migrationList);
+    //   await FilmsCategories.bulkCreate(migrationFilmCategory);
+    //   await FilmsActors.bulkCreate(migrationFilmActor);
+    //   await FilmsLists.bulkCreate(migrationFilmList);
+    // } else {
+    //   console.log('Db has exist, Migration canceled');
+    // }
   });
 };
 
 export default {
-  Users,
-  Films,
-  Episodes,
-  Progresses,
-  Actors,
-  Categories,
-  Lists,
-  FilmsActors,
-  FilmsCategories,
-  FilmsLists,
+  User,
   init,
 };

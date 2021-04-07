@@ -1,10 +1,13 @@
-const express = require('express');
+import { Router, Request, Response } from 'express';
 
-const router = express.Router();
-const { validateUser, getUserIdByToken, getTokenByRequest } = require('../middleware/auth');
-const db = require('../models');
+import {
+  validateUser,
+  getUserIdByToken,
+  getTokenByRequest,
+} from '../middleware/auth';
 const { buildRes } = require('../utils/response');
 const UserService = require('../services/user_service');
+const router = Router();
 
 /**
  * @swagger
@@ -32,10 +35,10 @@ const UserService = require('../services/user_service');
  *              $ref: '#/definitions/User'
  */
 
-router.get('/user', validateUser, async (req, res) => {
+router.get('/user', validateUser, async (req: Request, res: Response) => {
   try {
     const token = getTokenByRequest(req);
-    const userId = await getUserIdByToken(token);
+    const userId = await getUserIdByToken(String(token));
     const userInfo = await UserService.getUserInfo(userId);
     return buildRes(res, true, userInfo);
   } catch (e) {
@@ -43,4 +46,4 @@ router.get('/user', validateUser, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

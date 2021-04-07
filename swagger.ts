@@ -2,7 +2,12 @@ import swaggerJsdoc from 'swagger-jsdoc';
 
 const options = {
   // List of files to be processed.
-  apis: ['./src/api/**/*.js', './src/models/**/*.js'],
+  apis: [
+    './src/main/api/**/*.js',
+    './src/main/models/**/*.js',
+    './src/main/api/**/*.ts',
+    './src/main/models/**/*.ts',
+  ],
   basePath: '/api/v1',
   swaggerDefinition: {
     info: {

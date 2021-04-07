@@ -9,7 +9,6 @@ import http from 'http';
 import app from './src/main/app';
 import socket from './src/main/socket';
 import { env } from './src/main/constants';
-import { socket } from 'socket.io';
 
 /**
  * Get port from environment and store in Express.

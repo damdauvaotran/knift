@@ -1,15 +1,10 @@
-const express = require('express');
-const bcrypt = require('bcrypt');
-const cryptoRandomString = require('crypto-random-string');
-const { body, validationResult } = require('express-validator');
+import { Router, Request, Response } from 'express';
+
+const { validationResult } = require('express-validator');
 const { buildRes } = require('../../utils/response');
-const { Users } = require('../../models');
 const UserService = require('../../services/user_service');
 
-const router = express.Router();
-
-const saltRounds = process.env.SALT_ROUNDS ? parseInt(process.env.SALT_ROUNDS, 10) : 10;
-const saltLength = process.env.SALT_ROUNDS ? parseInt(process.env.SALT_LENGTH, 10) : 14;
+const router = Router();
 
 /**
  * @swagger
@@ -48,7 +43,7 @@ const saltLength = process.env.SALT_ROUNDS ? parseInt(process.env.SALT_LENGTH, 1
  *              type: string
  */
 
-router.post('/signup', async (req, res) => {
+router.post('/signup', async (req: Request, res: Response) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return buildRes(res, false, 'Invalid input');
@@ -63,5 +58,4 @@ router.post('/signup', async (req, res) => {
   }
 });
 
-
-module.exports = router;
+export default router;

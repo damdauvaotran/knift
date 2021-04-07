@@ -1,10 +1,10 @@
-const express = require('express');
-const { body, validationResult } = require('express-validator');
+import { Router, Request, Response } from 'express';
+const { validationResult } = require('express-validator');
 
 const { buildRes } = require('../../utils/response');
 const UserService = require('../../services/user_service');
 
-const router = express.Router();
+const router = Router();
 
 /**
  * @swagger
@@ -43,21 +43,19 @@ const router = express.Router();
  *              type: string
  */
 
-router.post(
-  '/login', async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return buildRes(res, false, 'Invalid input');
-    }
+router.post('/login', async (req: Request, res: Response) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return buildRes(res, false, 'Invalid input');
+  }
 
-    const userDTO = req.body;
-    try {
-      const token = await UserService.login(userDTO);
-      return buildRes(res, true, { token });
-    } catch (e) {
-      return buildRes(res, false, e.toString());
-    }
-  },
-);
+  const userDTO = req.body;
+  try {
+    const token = await UserService.login(userDTO);
+    return buildRes(res, true, { token });
+  } catch (e) {
+    return buildRes(res, false, e.toString());
+  }
+});
 
-module.exports = router;
+export default router;
