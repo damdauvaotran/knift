@@ -1,8 +1,8 @@
 import { Router, Request, Response } from 'express';
 
-const { validationResult } = require('express-validator');
-const { buildRes } = require('../../utils/response');
-const UserService = require('../../services/user_service');
+import { validationResult } from 'express-validator';
+import { buildRes } from '../../utils/response';
+import UserService from '../../services/user_service';
 
 const router = Router();
 
@@ -31,6 +31,12 @@ const router = Router();
  *              type: string
  *            password:
  *              type: string
+ *            gender:
+ *              type: string
+ *            displayName:
+ *              type: string
+ *            email:
+ *              type: string
  *    responses:
  *      '200':
  *        description: OK
@@ -54,7 +60,7 @@ router.post('/signup', async (req: Request, res: Response) => {
     await UserService.signUp(userDTO);
     return buildRes(res, true, {});
   } catch (e) {
-    return buildRes(res, false, e.toString());
+    return buildRes(res, false, e);
   }
 });
 

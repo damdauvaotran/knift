@@ -16,17 +16,12 @@ import SubjectModel from './subject_model';
 import RolePermissionModel from './many_to_many/role_permission_model';
 import UserClassModel from './many_to_many/user_class_model';
 
-// Seeding data for dev purpose
-// const migrationFilm = require('../mock/films_data');
-// const migrationEpList = require('../mock/episode_data');
-// const migrationProcess = require('../mock/progress_data');
-// const migrationUser = require('../mock/user_data');
-// const migrationActor = require('../mock/actor_data');
-// const migrationCategory = require('../mock/category_data');
-// const migrationList = require('../mock/list_data');
-// const migrationFilmActor = require('../mock/film_actor_data');
-// const migrationFilmCategory = require('../mock/film_category_data');
-// const migrationFilmList = require('../mock/film_list_data');
+// Seeding data
+import userSeed from '../seeding/user_data';
+import roleSeed from '../seeding/role_data';
+import permissionSeed from '../seeding/permission_data';
+import rolePermissionSeed from '../seeding/permission_data';
+import subjectSeed from '../seeding/subject_data';
 
 const DATABASE_NAME = env.DATABASE_NAME || 'math_app';
 const DATABASE_USERNAME = env.DATABASE_USERNAME || 'root';
@@ -47,6 +42,7 @@ const db: Sequelize = new Sequelize(
       max: 100,
       // timeout: 60 * 60 * 1000,
     },
+    logQueryParameters: true,
     pool: {
       max: 10,
       min: 0,
@@ -86,7 +82,7 @@ Role.hasMany(User, { foreignKey: 'roleId' });
 User.belongsTo(Role, { foreignKey: 'roleId' });
 
 Subject.hasMany(Class, { foreignKey: 'subjectId' });
-Class.belongsTo(Class, { foreignKey: 'subjectId' });
+Class.belongsTo(Subject, { foreignKey: 'subjectId' });
 
 Class.hasMany(Lesson, { foreignKey: 'classId' });
 Lesson.belongsTo(Class, { foreignKey: 'classId' });
@@ -110,28 +106,32 @@ const init = () => {
   console.log('Initializing database');
   db.sync({ force: env.DATABASE_FORCE_UPDATE }).then(async () => {
     console.log('Database & tables created!');
-    // const listFilm = await Films.findAll();
+    const roles = await Role.findAll();
 
-    // // Seeding data
-    // if (listFilm.length === 0) {
-    //   console.log('Empty film list, Start seeding data');
-    //   await Users.bulkCreate(migrationUser);
-    //   await Films.bulkCreate(migrationFilm);
-    //   await Episodes.bulkCreate(migrationEpList);
-    //   await Progresses.bulkCreate(migrationProcess);
-    //   await Actors.bulkCreate(migrationActor);
-    //   await Categories.bulkCreate(migrationCategory);
-    //   await Lists.bulkCreate(migrationList);
-    //   await FilmsCategories.bulkCreate(migrationFilmCategory);
-    //   await FilmsActors.bulkCreate(migrationFilmActor);
-    //   await FilmsLists.bulkCreate(migrationFilmList);
-    // } else {
-    //   console.log('Db has exist, Migration canceled');
-    // }
+    // Seeding data
+    // await User.bulkCreate(userSeeding);
+    if (roles.length === 0) {
+      console.log('Empty film list, Start seeding data');
+      await Role.bulkCreate(roleSeed);
+      await Permission.bulkCreate(permissionSeed);
+      await RolePermission.bulkCreate(rolePermissionSeed);
+      await User.bulkCreate(userSeed);
+      await Subject.bulkCreate(subjectSeed);
+    } else {
+      console.log('Db has exist, Seeding canceled');
+    }
   });
 };
 
 export default {
   User,
+  Role,
+  Permission,
+  Class,
+  Conference,
+  Lesson,
+  Subject,
+  RolePermission,
+  UserClass,
   init,
 };

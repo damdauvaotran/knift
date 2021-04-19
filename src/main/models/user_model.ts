@@ -18,10 +18,6 @@ export default (db: Sequelize, config: ModelOptions) =>
         type: STRING,
         allowNull: false,
       },
-      salt: {
-        type: STRING,
-        allowNull: false,
-      },
       gender: {
         type: STRING,
         allowNull: false,

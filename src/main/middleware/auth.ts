@@ -1,23 +1,16 @@
 import jwt from 'jsonwebtoken';
-import db from '../models';
 import { Request, Response } from 'express';
+import db from '../models';
+import { env } from '../constants';
+import {
+  getTokenByRequest,
+  getUserIdByToken,
+  IJWTBody,
+} from '../utils/request';
 
 const { User } = db;
 
-const jwtPrivateKey = process.env.PRIVATE_KEY_JWT || '!bE8JX7!owd!W67&XEU9kw2W';
-
-interface IJWTBody {
-  id?: string;
-}
-
-export const getUserIdByToken = async (token: string) => {
-  const decodedData = await jwt.verify(token, jwtPrivateKey);
-  const id = (<IJWTBody>decodedData)?.id;
-  return id;
-};
-
-export const getTokenByRequest = (req: Request) =>
-  req.headers.authorization && req.headers.authorization.replace('Bearer ', '');
+const jwtPrivateKey = env.PRIVATE_KEY_JWT;
 
 export const validateUser = (req: Request, res: Response, next: Function) => {
   const asyncFunction = async () => {

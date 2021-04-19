@@ -1,5 +1,6 @@
+import { Response } from 'express';
 
-const buildRes = (res, success, data) => {
+export const buildRes = (res: Response, success: boolean, data: any) => {
   if (success) {
     return res.status(200).json({
       success,
@@ -11,8 +12,4 @@ const buildRes = (res, success, data) => {
     success,
     message: data,
   });
-};
-
-module.exports = {
-  buildRes,
 };

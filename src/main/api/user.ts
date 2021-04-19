@@ -1,10 +1,7 @@
 import { Router, Request, Response } from 'express';
 
-import {
-  validateUser,
-  getUserIdByToken,
-  getTokenByRequest,
-} from '../middleware/auth';
+import { validateUser } from '../middleware/auth';
+import { getUserIdByToken, getTokenByRequest } from '../utils/request';
 const { buildRes } = require('../utils/response');
 const UserService = require('../services/user_service');
 const router = Router();
