@@ -1,3 +1,4 @@
+import { where } from 'sequelize/types';
 import db from '../models';
 
 export interface IGetAllLesson {
@@ -73,4 +74,28 @@ export const deleteLessonById = async (lessonId: number) => {
   });
 
   return { lessonId };
+};
+
+export const getAllLessonWithClassId = async (
+  { limit, offset }: IGetAllLesson,
+  classId: number
+) => {
+  const trueLimit = limit ?? 10;
+  const trueOffset = offset ?? 0;
+  const lessonList = await db.Lesson.findAll({
+    limit: trueLimit,
+    offset: trueOffset,
+    include: {
+      model: db.Class,
+      where: {
+        classId,
+      },
+      attributes: []
+    },
+  });
+  return {
+    lessons: lessonList,
+    limit: trueLimit,
+    offset: trueOffset,
+  };
 };

@@ -22,6 +22,9 @@ import roleSeed from '../seeding/role_data';
 import permissionSeed from '../seeding/permission_data';
 import rolePermissionSeed from '../seeding/permission_data';
 import subjectSeed from '../seeding/subject_data';
+import classSeed from '../seeding/class_data';
+import lessonSeed from '../seeding/lesson_data';
+import userClassSeed from '../seeding/user_class_data';
 
 const DATABASE_NAME = env.DATABASE_NAME || 'math_app';
 const DATABASE_USERNAME = env.DATABASE_USERNAME || 'root';
@@ -117,6 +120,9 @@ const init = () => {
       await RolePermission.bulkCreate(rolePermissionSeed);
       await User.bulkCreate(userSeed);
       await Subject.bulkCreate(subjectSeed);
+      await Class.bulkCreate(classSeed)
+      await UserClass.bulkCreate(userClassSeed)
+      await Lesson.bulkCreate(lessonSeed)
     } else {
       console.log('Db has exist, Seeding canceled');
     }

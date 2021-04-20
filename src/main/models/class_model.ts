@@ -22,6 +22,10 @@ export default (db: Sequelize, config: ModelOptions) =>
         type: STRING,
         allowNull: false,
       },
+      detail: {
+        type: STRING,
+        allowNull: false,
+      },
     },
     config
   );

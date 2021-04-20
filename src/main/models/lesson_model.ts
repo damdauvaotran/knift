@@ -14,6 +14,10 @@ export default (db: Sequelize, config: ModelOptions) =>
         type: STRING,
         allowNull: false,
       },
+      detail: {
+        type: STRING,
+        allowNull: false,
+      },
       startTime: {
         type: DATE,
         allowNull: false,

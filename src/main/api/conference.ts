@@ -2,12 +2,8 @@ import { Router, Request, Response } from 'express';
 import { buildRes } from '../utils/response';
 import { validateUser } from '../middleware/auth';
 import {
-  getAllLesson,
-  getLessonById,
-  createLesson,
-  deleteLessonById,
-  updateLessonById,
-} from '../services/lesson_service';
+  getAllConference
+} from '../services/conference_service';
 
 const router = Router();
 
@@ -42,7 +38,7 @@ router.get('/conference', validateUser, async (req: Request, res: Response) => {
     const { limit, offset } = req.query;
     const trueLimit = limit ? parseInt(String(limit), 10) : undefined;
     const trueOffset = offset ? parseInt(String(offset), 10) : undefined;
-    const lessonsInfo = await getAllLesson({
+    const lessonsInfo = await getAllConference({
       limit: trueLimit,
       offset: trueOffset,
     });

@@ -7,6 +7,7 @@ import {
   createLesson,
   deleteLessonById,
   updateLessonById,
+  getAllLessonWithClassId,
 } from '../services/lesson_service';
 
 const router = Router();
@@ -55,6 +56,62 @@ router.get('/lesson', validateUser, async (req: Request, res: Response) => {
 /**
  * @swagger
  *
+ * /lesson/class/{classId}:
+ *  get:
+ *    security:
+ *      - Bearer: []
+ *    summary: Get lesson info
+ *    description: Return lesson info
+ *    tags:
+ *      - lesson
+ *    produces:
+ *      - application/json
+ *    parameters:
+ *      - in: path
+ *        name: classId
+ *        schema:
+ *          type: integer
+ *        required: true
+ *    responses:
+ *      '200':
+ *        description: OK
+ *        schema:
+ *          type: object
+ *          properties:
+ *            success:
+ *              type: boolean
+ *            data:
+ *              type: object
+ *              $ref: '#/definitions/Lesson'
+ */
+
+router.get(
+  '/lesson/class/:classId',
+  validateUser,
+  async (req: Request, res: Response) => {
+    try {
+      const { limit, offset } = req.query;
+      const { classId } = req.params;
+      const trueLimit = limit ? parseInt(String(limit), 10) : undefined;
+      const trueOffset = offset ? parseInt(String(offset), 10) : undefined;
+      const trueClassId = classId ? parseInt(String(classId), 10) : 1;
+      const lessonsInfo = await getAllLessonWithClassId(
+        {
+          limit: trueLimit,
+          offset: trueOffset,
+        },
+        trueClassId
+      );
+      return buildRes(res, true, lessonsInfo);
+    } catch (e) {
+      return buildRes(res, false, e.toString());
+    }
+  }
+);
+
+/**
+ * @swagger
+ *
  * /lesson/{lessonId}:
  *  get:
  *    security:
@@ -79,20 +136,16 @@ router.get('/lesson', validateUser, async (req: Request, res: Response) => {
  *          $ref: '#/definitions/Lesson'
  */
 
-router.get(
-  '/lesson/:id',
-  validateUser,
-  async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const trueId = parseInt(String(id), 10);
-      const lessonInfo = await getLessonById(trueId);
-      return buildRes(res, true, lessonInfo);
-    } catch (e) {
-      return buildRes(res, false, e.toString());
-    }
+router.get('/lesson/:id', validateUser, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const trueId = parseInt(String(id), 10);
+    const lessonInfo = await getLessonById(trueId);
+    return buildRes(res, true, lessonInfo);
+  } catch (e) {
+    return buildRes(res, false, e.toString());
   }
-);
+});
 
 /**
  * @swagger
@@ -133,23 +186,24 @@ router.get(
  *          $ref: '#/definitions/Lesson'
  */
 
-router.post(
-  '/lesson',
-  validateUser,
-  async (req: Request, res: Response) => {
-    try {
-      const { name, classId, startTime, endTime } = req.body;
-      const trueName = String(name);
-      const trueClassId = parseInt(classId, 10)
-      const trueStartTime = parseInt(startTime, 10)
-      const trueEndTime = parseInt(endTime, 10)
+router.post('/lesson', validateUser, async (req: Request, res: Response) => {
+  try {
+    const { name, classId, startTime, endTime } = req.body;
+    const trueName = String(name);
+    const trueClassId = parseInt(classId, 10);
+    const trueStartTime = parseInt(startTime, 10);
+    const trueEndTime = parseInt(endTime, 10);
 
-      const lessonInfo = await createLesson({ name: trueName, classId: trueClassId, startTime: trueStartTime, endTime: trueEndTime });
-      return buildRes(res, true, lessonInfo);
-    } catch (e) {
-      return buildRes(res, false, e.toString());
-    }
+    const lessonInfo = await createLesson({
+      name: trueName,
+      classId: trueClassId,
+      startTime: trueStartTime,
+      endTime: trueEndTime,
+    });
+    return buildRes(res, true, lessonInfo);
+  } catch (e) {
+    return buildRes(res, false, e.toString());
   }
-);
+});
 
 export default router;
