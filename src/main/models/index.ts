@@ -15,6 +15,7 @@ import SubjectModel from './subject_model';
 
 import RolePermissionModel from './many_to_many/role_permission_model';
 import UserClassModel from './many_to_many/user_class_model';
+import AttendanceModel from './many_to_many/attendance_model';
 
 // Seeding data
 import userSeed from '../seeding/user_data';
@@ -25,6 +26,7 @@ import subjectSeed from '../seeding/subject_data';
 import classSeed from '../seeding/class_data';
 import lessonSeed from '../seeding/lesson_data';
 import userClassSeed from '../seeding/user_class_data';
+import conferenceSeed from '../seeding/conference_data';
 
 const DATABASE_NAME = env.DATABASE_NAME || 'math_app';
 const DATABASE_USERNAME = env.DATABASE_USERNAME || 'root';
@@ -80,6 +82,7 @@ const Subject = SubjectModel(db, tableConfig);
 // Many to many table
 const RolePermission = RolePermissionModel(db, tableConfig);
 const UserClass = UserClassModel(db, tableConfig);
+const Attendance = AttendanceModel(db, tableConfig);
 
 Role.hasMany(User, { foreignKey: 'roleId' });
 User.belongsTo(Role, { foreignKey: 'roleId' });
@@ -105,6 +108,12 @@ Permission.belongsToMany(Role, {
 User.belongsToMany(Class, { through: UserClass, foreignKey: 'userId' });
 Class.belongsToMany(User, { through: UserClass, foreignKey: 'classId' });
 
+User.belongsToMany(Conference, { through: Attendance, foreignKey: 'userId' });
+Conference.belongsToMany(User, {
+  through: Attendance,
+  foreignKey: 'conferenceId',
+});
+
 const init = () => {
   console.log('Initializing database');
   db.sync({ force: env.DATABASE_FORCE_UPDATE }).then(async () => {
@@ -120,9 +129,10 @@ const init = () => {
       await RolePermission.bulkCreate(rolePermissionSeed);
       await User.bulkCreate(userSeed);
       await Subject.bulkCreate(subjectSeed);
-      await Class.bulkCreate(classSeed)
-      await UserClass.bulkCreate(userClassSeed)
-      await Lesson.bulkCreate(lessonSeed)
+      await Class.bulkCreate(classSeed);
+      await UserClass.bulkCreate(userClassSeed);
+      await Lesson.bulkCreate(lessonSeed);
+      await Conference.bulkCreate(conferenceSeed);
     } else {
       console.log('Db has exist, Seeding canceled');
     }
