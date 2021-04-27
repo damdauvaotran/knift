@@ -1,8 +1,15 @@
 import db from '../models';
+import {confStatus} from "../constants"
 
 export interface IGetAllConference {
   limit?: number;
   offset?: number;
+}
+
+export interface ICreateConference {
+  lessonId: number;
+  startTime: number;
+  endTime: number
 }
 
 export const getAllConference = async ({
@@ -46,4 +53,14 @@ export const getAllConferenceWithLessonId = async (
     limit: trueLimit,
     offset: trueOffset,
   };
+};
+
+export const createConference = async (conferenceInfo: ICreateConference) => {
+  const conference = await db.Conference.create({
+   status:  confStatus.waiting,
+   startTime: conferenceInfo.startTime,
+   endTime: conferenceInfo.endTime,
+   lessonId: conferenceInfo.lessonId
+  });
+  return { lesson: conference };
 };

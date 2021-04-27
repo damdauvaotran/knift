@@ -1,10 +1,12 @@
 import { Server, Socket } from 'socket.io';
 import http from 'http';
-import { getUserIdByToken } from '../utils/request';
+import { getUserInfoByToken } from '../utils/request';
 import { Room } from './Room';
 import { Peer } from './Peer';
 import config from './config';
+import {addAttendance} from '../services/attendance_service'
 import * as mediasoup from 'mediasoup';
+import { json } from 'sequelize/types';
 
 interface ISocket {
   init: (server: http.Server) => void;
@@ -30,9 +32,11 @@ const sockets: ISocket = {
       });
       socket.on('authen', async (token: any) => {
         try {
-          await getUserIdByToken(token);
+          const userInfo = await getUserInfoByToken(token);
           console.log('Authenticated socket ', socket.id);
           socket.auth = true;
+          socket.role = userInfo.role;
+          socket.userId = userInfo.id;
         } catch (e) {
           socket.disconnect('unauthorized');
         }
@@ -68,6 +72,10 @@ const sockets: ISocket = {
               error: 'room does not exist',
             });
           }
+
+          addAttendance(socket.userId, parseInt(roomId, 10)).then(data=>{
+            console.log('--- insert attendance -- ' + JSON.stringify(data))
+          })
           roomList.get(roomId).addPeer(new Peer(socket.id, name));
           socket.roomId = roomId;
 

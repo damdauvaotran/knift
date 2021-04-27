@@ -62,7 +62,7 @@ export const login = async (userDTO: any) => {
     );
     if (isPasswordCorrect) {
       const token = jwt.sign(
-        { username, id: user.userId, r: user.role?.name },
+        { displayName : user.displayName, email: user.email, id: user.userId, role: user.role?.name },
         jwtPrivateKey,
         { expiresIn: 8640000 }
       ); // 100 days

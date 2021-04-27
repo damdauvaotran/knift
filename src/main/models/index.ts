@@ -124,15 +124,19 @@ const init = () => {
     // await User.bulkCreate(userSeeding);
     if (roles.length === 0) {
       console.log('Empty film list, Start seeding data');
-      await Role.bulkCreate(roleSeed);
-      await Permission.bulkCreate(permissionSeed);
-      await RolePermission.bulkCreate(rolePermissionSeed);
-      await User.bulkCreate(userSeed);
-      await Subject.bulkCreate(subjectSeed);
-      await Class.bulkCreate(classSeed);
-      await UserClass.bulkCreate(userClassSeed);
-      await Lesson.bulkCreate(lessonSeed);
-      await Conference.bulkCreate(conferenceSeed);
+      try {
+        await Role.bulkCreate(roleSeed);
+        await Permission.bulkCreate(permissionSeed);
+        await RolePermission.bulkCreate(rolePermissionSeed);
+        await User.bulkCreate(userSeed);
+        await Subject.bulkCreate(subjectSeed);
+        await Class.bulkCreate(classSeed);
+        await UserClass.bulkCreate(userClassSeed);
+        await Lesson.bulkCreate(lessonSeed);
+        await Conference.bulkCreate(conferenceSeed);
+      } catch (error) {
+        console.log(error);
+      }
     } else {
       console.log('Db has exist, Seeding canceled');
     }
@@ -149,5 +153,6 @@ export default {
   Subject,
   RolePermission,
   UserClass,
+  Attendance,
   init,
 };

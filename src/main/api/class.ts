@@ -6,6 +6,8 @@ const { buildRes } = require('../utils/response');
 const {
   getAllClassByUserId,
   createClassWithUserId,
+  updateClass,
+  deleteClass,
 } = require('../services/class_service');
 const router = Router();
 
@@ -37,10 +39,10 @@ const router = Router();
 
 router.get('/class', validateUser, async (req: Request, res: Response) => {
   try {
-    const limit = req.query?.limit
-    const offset = req.query?.offset
+    const limit = req.query?.limit;
+    const offset = req.query?.offset;
     const userId = await getUserIdByRequest(req);
-    const classesInfo = await getAllClassByUserId(userId, {limit, offset});
+    const classesInfo = await getAllClassByUserId(userId, { limit, offset });
     return buildRes(res, true, classesInfo);
   } catch (e) {
     return buildRes(res, false, e.toString());
@@ -74,11 +76,13 @@ router.get('/class', validateUser, async (req: Request, res: Response) => {
  *          properties:
  *            name:
  *              type: string
+ *            subjectId:
+ *              type: integer
+ *            detail:
+ *              type: string
  *            startTime:
  *              type: integer
  *            endTime:
- *              type: integer
- *            subjectId:
  *              type: integer
  *    responses:
  *      '200':
@@ -95,18 +99,141 @@ router.get('/class', validateUser, async (req: Request, res: Response) => {
 
 router.post('/class', validateUser, async (req: Request, res: Response) => {
   try {
-    const userId = await  getUserIdByRequest(req);
-    const { name, startTime, endTime, subjectId } = req.body;
+    const userId = await getUserIdByRequest(req);
+    const { name, startTime, endTime, subjectId, detail } = req.body;
     const classInstance = await createClassWithUserId(userId, {
       name,
       startTime,
       endTime,
       subjectId,
+      detail,
     });
-    return buildRes(res, true, classInstance)
+    return buildRes(res, true, classInstance);
   } catch (e) {
     return buildRes(res, false, e.toString());
   }
 });
+
+/**
+ * @swagger
+ *
+ * /class/:classId:
+ *  put:
+ *    security:
+ *      - Bearer: []
+ *    summary: Update class info
+ *    description: Update class info
+ *    tags:
+ *      - class
+ *    produces:
+ *      - application/json
+ *    parameters:
+ *      - in: path
+ *        name: classId
+ *        schema:
+ *          type: integer
+ *        required: true
+ *      - in: body
+ *        name: body
+ *        required: true
+ *        schema:
+ *          type: object
+ *          required:
+ *          - name
+ *          - startTime
+ *          - endTime
+ *          - subjectId
+ *          properties:
+ *            name:
+ *              type: string
+ *            subjectId:
+ *              type: integer
+ *            detail:
+ *              type: string
+ *            startTime:
+ *              type: integer
+ *            endTime:
+ *              type: integer
+ *    responses:
+ *      '200':
+ *        description: OK
+ *        schema:
+ *          type: object
+ *          properties:
+ *            success:
+ *              type: boolean
+ *            data:
+ *              type: object
+ *              $ref: '#/definitions/Class'
+ */
+
+router.put(
+  '/class/:classId',
+  validateUser,
+  async (req: Request, res: Response) => {
+    try {
+      const { name, startTime, endTime, subjectId, detail } = req.body;
+      const classId = req.params?.classId ?? '0';
+      const trueClassId = parseInt(classId, 10);
+      const classInstance = await updateClass(trueClassId, {
+        name,
+        startTime,
+        endTime,
+        subjectId,
+        detail,
+      });
+      return buildRes(res, true, classInstance);
+    } catch (e) {
+      return buildRes(res, false, e.toString());
+    }
+  }
+);
+
+/**
+ * @swagger
+ *
+ * /class/:id:
+ *  delete:
+ *    security:
+ *      - Bearer: []
+ *    summary: Update class info
+ *    description: Update class info
+ *    tags:
+ *      - class
+ *    produces:
+ *      - application/json
+ *    parameters:
+ *      - in: path
+ *        name: classId
+ *        schema:
+ *          type: integer
+ *        required: true
+ *    responses:
+ *      '200':
+ *        description: OK
+ *        schema:
+ *          type: object
+ *          properties:
+ *            success:
+ *              type: boolean
+ *            data:
+ *              type: object
+ *              $ref: '#/definitions/Class'
+ */
+
+router.delete(
+  '/class/:classId',
+  validateUser,
+  async (req: Request, res: Response) => {
+    try {
+      const classId = req.params?.classId ?? '0';
+      const trueClassId = parseInt(classId, 10);
+      const classInstance = await deleteClass(trueClassId);
+      return buildRes(res, true, classInstance);
+    } catch (e) {
+      return buildRes(res, false, e.toString());
+    }
+  }
+);
 
 export default router;

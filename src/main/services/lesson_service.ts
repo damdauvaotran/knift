@@ -9,12 +9,16 @@ export interface IGetAllLesson {
 export interface ICreateLesson {
   name: string;
   classId: number;
+  detail: string;
   startTime: number;
   endTime: number;
 }
 
 export interface IUpdateLesson {
   name: string;
+  detail: string;
+  startTime: number;
+  endTime: number;
 }
 
 export const createLesson = async (lessonInfo: ICreateLesson) => {
@@ -23,6 +27,7 @@ export const createLesson = async (lessonInfo: ICreateLesson) => {
     classId: lessonInfo.classId,
     startTime: lessonInfo.startTime,
     endTime: lessonInfo.endTime,
+    detail: lessonInfo.detail
   });
   return { lesson };
 };

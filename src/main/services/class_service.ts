@@ -12,6 +12,7 @@ export interface ICreateClass {
   startTime: number;
   endTime: number;
   subjectId: number;
+  detail: string;
 }
 
 export const getAllClassByUserId = async (
@@ -34,7 +35,7 @@ export const getAllClassByUserId = async (
       },
       {
         model: db.Subject,
-      }
+      },
     ],
     limit: trueLimit,
     offset: trueOffset,
@@ -65,13 +66,14 @@ export const getClassByUserId = async (userId: number, classId: number) => {
 
 export const createClassWithUserId = async (
   userId: number,
-  { name, endTime, startTime, subjectId }: ICreateClass
+  { name, endTime, startTime, subjectId, detail }: ICreateClass
 ) => {
   const classInstance = await db.Class.create({
     name,
     startTime,
     endTime,
     subjectId,
+    detail,
   });
   await db.UserClass.create({
     userId,
@@ -80,3 +82,22 @@ export const createClassWithUserId = async (
   });
   return { class: classInstance };
 };
+
+export const updateClass = async (
+  classId: number,
+  { name, endTime, startTime, subjectId, detail }: ICreateClass
+) => {
+  const classInstance = await db.Class.update({
+    name,
+    startTime,
+    endTime,
+    subjectId,
+    detail,
+  }, {where: {classId}});
+  return { class: classInstance };
+};
+
+export const deleteClass = async (classId: number)=>{
+  await db.Class.destroy({where:{classId}})
+  return {}
+}

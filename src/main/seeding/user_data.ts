@@ -7,5 +7,16 @@ export default [
     gender: 'MALE',
     email: 'abc@gmail.com',
     avatar: 'yoooooo',
+    roleId: 1
+  },
+  {
+    userId: 2,
+    username: '2',
+    password: '$2b$14$IwG.E8fjA821bZ1XK3bDSeGVQxsSGgY4l93BjqUNLBq55DSqAFmiW',
+    displayName: 'jj',
+    gender: 'MALE',
+    email: 'abc@gmail.com',
+    avatar: 'yoooooo',
+    roleId: 2
   },
 ];

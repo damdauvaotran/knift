@@ -188,7 +188,7 @@ router.get('/lesson/:id', validateUser, async (req: Request, res: Response) => {
 
 router.post('/lesson', validateUser, async (req: Request, res: Response) => {
   try {
-    const { name, classId, startTime, endTime } = req.body;
+    const { name, classId, startTime, endTime, detail } = req.body;
     const trueName = String(name);
     const trueClassId = parseInt(classId, 10);
     const trueStartTime = parseInt(startTime, 10);
@@ -199,11 +199,123 @@ router.post('/lesson', validateUser, async (req: Request, res: Response) => {
       classId: trueClassId,
       startTime: trueStartTime,
       endTime: trueEndTime,
+      detail,
     });
     return buildRes(res, true, lessonInfo);
   } catch (e) {
     return buildRes(res, false, e.toString());
   }
 });
+
+/**
+ * @swagger
+ *
+ * /lesson/:lessonId:
+ *  put:
+ *    security:
+ *      - Bearer: []
+ *    summary: Create lesson
+ *    description: create lesson
+ *    tags:
+ *      - lesson
+ *    produces:
+ *      - application/json
+ *    parameters:
+ *      - in: path
+ *        name: lessonId
+ *        schema:
+ *          type: integer
+ *        required: true
+ *      - in: body
+ *        name: body
+ *        required: true
+ *        schema:
+ *          type: object
+ *          required:
+ *          - name
+ *          - classId
+ *          properties:
+ *            name:
+ *              type: string
+ *            classId:
+ *              type: number
+ *            startTime:
+ *              type: number
+ *            endTime:
+ *              type: number
+ *    responses:
+ *      '200':
+ *        description: OK
+ *        schema:
+ *          type: object
+ *          $ref: '#/definitions/Lesson'
+ */
+
+router.put(
+  '/lesson/:lessonId',
+  validateUser,
+  async (req: Request, res: Response) => {
+    try {
+      const { name, startTime, endTime, detail } = req.body;
+      const lessonId = req.params?.lessonId ?? '0';
+      const trueName = String(name);
+      const trueLessonId = parseInt(lessonId, 10);
+      const trueStartTime = parseInt(startTime, 10);
+      const trueEndTime = parseInt(endTime, 10);
+
+      const lessonInfo = await updateLessonById(trueLessonId, {
+        name: trueName,
+        startTime: trueStartTime,
+        endTime: trueEndTime,
+        detail,
+      });
+      return buildRes(res, true, lessonInfo);
+    } catch (e) {
+      return buildRes(res, false, e.toString());
+    }
+  }
+);
+
+/**
+ * @swagger
+ *
+ * /lesson/:lessonId:
+ *  delete:
+ *    security:
+ *      - Bearer: []
+ *    summary: Create lesson
+ *    description: create lesson
+ *    tags:
+ *      - lesson
+ *    produces:
+ *      - application/json
+ *    parameters:
+ *      - in: path
+ *        name: lessonId
+ *        schema:
+ *          type: number
+ *        required: true
+ *    responses:
+ *      '200':
+ *        description: OK
+ *        schema:
+ *          type: object
+ *          $ref: '#/definitions/Lesson'
+ */
+
+router.delete(
+  '/lesson/:lessonId',
+  validateUser,
+  async (req: Request, res: Response) => {
+    try {
+      const lessonId = req.params?.lessonId ?? '0';
+      const trueLessonId = parseInt(lessonId, 10);
+      const lessonInfo = await deleteLessonById(trueLessonId);
+      return buildRes(res, true, lessonInfo);
+    } catch (e) {
+      return buildRes(res, false, e.toString());
+    }
+  }
+);
 
 export default router;

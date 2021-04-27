@@ -14,4 +14,9 @@ export default [
     userId: 1,
     classId: 3,
   },
+  {
+    userClassId: 4,
+    userId: 2,
+    classId: 1,
+  },
 ];
