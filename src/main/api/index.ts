@@ -6,6 +6,7 @@ import classRouter from './class';
 import subjectRouter from './subject';
 import lessonRouter from './lesson';
 import conferenceRouter from './conference';
+import invitationRouter from './invitation';
 
 const router = express.Router();
 
@@ -15,6 +16,7 @@ router.use('/', classRouter);
 router.use('/', subjectRouter);
 router.use('/', lessonRouter);
 router.use('/', conferenceRouter);
+router.use('/', invitationRouter);
 
 // GET home page.
 router.get('/', (_req: any, res: any) => {

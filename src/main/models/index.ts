@@ -44,8 +44,7 @@ const db: Sequelize = new Sequelize(
     dialect: 'mysql',
     timezone: '+07:00',
     retry: {
-      max: 100,
-      // timeout: 60 * 60 * 1000,
+      max: 3
     },
     logQueryParameters: true,
     pool: {
