@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import db from '../models';
+import { Role } from '../types/common';
 const algorithm = 'aes-256-ctr';
 const ENCRYPTION_KEY = crypto
   .createHash('sha256')
@@ -33,6 +34,8 @@ export interface IInvitation {
   classId: number;
   expire?: number;
   userId?: number;
+  teacherName?: string,
+  className?: string,
 }
 
 enum InvitationType {
@@ -63,6 +66,25 @@ export const generateUserInvitation = (
 export const getInvitationInfo = async (invitationString: string) => {
   try {
     const invitationObj: IInvitation = JSON.parse(decrypt(invitationString));
+    const classInfo = await db.Class.findOne({
+      where: { classId: invitationObj.classId },
+      include: [
+        {
+          model: db.User,
+          include: [
+            {
+              model: db.Role,
+              where: {
+                name: Role.TEACHER,
+              },
+            },
+          ],
+        },
+      ],
+    });
+    console.log(classInfo);
+    invitationObj.className = classInfo?.getDataValue('name')
+    invitationObj.teacherName = classInfo?.getDataValue('users')[0].displayName
     return invitationObj;
   } catch (e) {
     throw e;
