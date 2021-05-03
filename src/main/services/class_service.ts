@@ -48,12 +48,8 @@ export const getClassByUserId = async (userId: number, classId: number) => {
       {
         model: db.User,
         required: true,
-        through: {
-          attributes: [],
-        },
-        on: {
-          userId,
-        },
+        attributes: [],
+        where: { userId },
       },
     ],
     where: {
@@ -86,17 +82,20 @@ export const updateClass = async (
   classId: number,
   { name, endTime, startTime, subjectId, detail }: ICreateClass
 ) => {
-  const classInstance = await db.Class.update({
-    name,
-    startTime,
-    endTime,
-    subjectId,
-    detail,
-  }, {where: {classId}});
+  const classInstance = await db.Class.update(
+    {
+      name,
+      startTime,
+      endTime,
+      subjectId,
+      detail,
+    },
+    { where: { classId } }
+  );
   return { class: classInstance };
 };
 
-export const deleteClass = async (classId: number)=>{
-  await db.Class.destroy({where:{classId}})
-  return {}
-}
+export const deleteClass = async (classId: number) => {
+  await db.Class.destroy({ where: { classId } });
+  return {};
+};

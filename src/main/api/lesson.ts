@@ -210,7 +210,7 @@ router.post('/lesson', validateUser, async (req: Request, res: Response) => {
 /**
  * @swagger
  *
- * /lesson/:lessonId:
+ * /lesson/{lessonId}:
  *  put:
  *    security:
  *      - Bearer: []

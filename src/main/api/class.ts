@@ -8,6 +8,7 @@ const {
   createClassWithUserId,
   updateClass,
   deleteClass,
+  getClassByUserId
 } = require('../services/class_service');
 const router = Router();
 
@@ -43,6 +44,47 @@ router.get('/class', validateUser, async (req: Request, res: Response) => {
     const offset = req.query?.offset;
     const userId = await getUserIdByRequest(req);
     const classesInfo = await getAllClassByUserId(userId, { limit, offset });
+    return buildRes(res, true, classesInfo);
+  } catch (e) {
+    return buildRes(res, false, e.toString());
+  }
+});
+
+/**
+ * @swagger
+ *
+ * /class/{classId}:
+ *  get:
+ *    security:
+ *      - Bearer: []
+ *    summary: Get class info by id
+ *    description: Return class info
+ *    tags:
+ *      - class
+ *    produces:
+ *      - application/json
+ *    parameters:
+ *      - in: path
+ *        name: classId
+ *        type: number
+ *    responses:
+ *      '200':
+ *        description: OK
+ *        schema:
+ *          type: object
+ *          properties:
+ *            success:
+ *              type: boolean
+ *            data:
+ *              type: object
+ *              $ref: '#/definitions/Class'
+ */
+
+ router.get('/class/:id', validateUser, async (req: Request, res: Response) => {
+  try {
+    const {id: classId} =  req.params
+    const userId = await getUserIdByRequest(req);
+    const classesInfo = await getClassByUserId(userId, classId);
     return buildRes(res, true, classesInfo);
   } catch (e) {
     return buildRes(res, false, e.toString());
@@ -117,7 +159,7 @@ router.post('/class', validateUser, async (req: Request, res: Response) => {
 /**
  * @swagger
  *
- * /class/:classId:
+ * /class/{classId}:
  *  put:
  *    security:
  *      - Bearer: []
@@ -192,7 +234,7 @@ router.put(
 /**
  * @swagger
  *
- * /class/:id:
+ * /class/{classId}:
  *  delete:
  *    security:
  *      - Bearer: []

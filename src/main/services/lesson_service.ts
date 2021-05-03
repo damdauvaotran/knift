@@ -72,7 +72,7 @@ export const updateLessonById = async (
 };
 
 export const deleteLessonById = async (lessonId: number) => {
-  const lesson = await db.Lesson.destroy({
+  await db.Lesson.destroy({
     where: {
       lessonId,
     },
