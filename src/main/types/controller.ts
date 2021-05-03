@@ -9,4 +9,5 @@ export interface ISignUpReq {
   displayName?: string;
   gender?: string;
   email?: string;
+  roleId?: number
 }

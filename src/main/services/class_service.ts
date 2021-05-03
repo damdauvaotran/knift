@@ -25,10 +25,7 @@ export const getAllClassByUserId = async (
       {
         model: db.User,
         required: true,
-        through: {
-          attributes: [],
-        },
-        on: {
+        where: {
           userId,
         },
       },

@@ -9,31 +9,23 @@ import { controllerType, modelType } from '../types';
 const jwtPrivateKey = env.PRIVATE_KEY_JWT;
 
 export const signUp = async (userDTO: controllerType.ISignUpReq) => {
-  const { username, password, gender, displayName } = userDTO;
+  const { username, password, gender, displayName, email, roleId } = userDTO;
   const user = await db.User.findOne({ where: { username } });
   if (user !== null) {
     throw new Error('User exist');
   }
 
   const hashedPassword = await bcrypt.hash(password, env.SALT_ROUNDS);
-  console.log({
-    username,
-    password: hashedPassword,
-    gender: gender,
-    roleId: 1,
-    avatar: 'saaa',
-    displayName: displayName,
-    email: 'abcc@gmail.com',
-  });
+
   try {
     const createdUser = await db.User.create({
       username,
       password: hashedPassword,
       gender: gender,
-      roleId: 1,
+      roleId: roleId,
       avatar: '',
       displayName: displayName,
-      email: 'abcc@gmail.com',
+      email: email,
     });
     return { username };
   } catch (e) {
