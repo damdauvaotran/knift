@@ -31,7 +31,26 @@ export const getAllStudentFromClass = async (
         attributes: [],
       },
     ],
-    raw: true
+    raw: true,
+  });
+
+  const total = await db.User.count({
+    include: [
+      {
+        model: db.Class,
+        where: {
+          classId,
+        },
+        attributes: [],
+      },
+      {
+        model: db.Role,
+        where: {
+          name: Role.STUDENT,
+        },
+        attributes: [],
+      },
+    ],
   });
   return {
     students: studentList.map((lesson: any) => ({
@@ -40,6 +59,7 @@ export const getAllStudentFromClass = async (
     })),
     limit: trueLimit,
     offset: trueOffset,
+    total,
   };
 };
 
@@ -49,7 +69,7 @@ export const deleteStudentFromClass = async (
 ) => {
   await db.UserClass.destroy({
     where: {
-      userId:studentId,
+      userId: studentId,
       classId,
     },
   });

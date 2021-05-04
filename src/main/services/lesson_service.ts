@@ -98,9 +98,20 @@ export const getAllLessonWithClassId = async (
       attributes: []
     },
   });
+
+  const total = await db.Lesson.count({
+    include: {
+      model: db.Class,
+      where: {
+        classId,
+      },
+      attributes: []
+    },
+  });
   return {
     lessons: lessonList,
     limit: trueLimit,
     offset: trueOffset,
+    total
   };
 };

@@ -36,7 +36,22 @@ export const getAllClassByUserId = async (
     limit: trueLimit,
     offset: trueOffset,
   });
-  return { classes, limit: trueLimit, offset: trueOffset };
+
+  const total = await db.Class.count({
+    include: [
+      {
+        model: db.User,
+        required: true,
+        where: {
+          userId,
+        },
+      },
+      {
+        model: db.Subject,
+      },
+    ],
+  });
+  return { classes, limit: trueLimit, offset: trueOffset, total };
 };
 
 export const getClassByUserId = async (userId: number, classId: number) => {

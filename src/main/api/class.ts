@@ -40,8 +40,8 @@ const router = Router();
 
 router.get('/class', validateUser, async (req: Request, res: Response) => {
   try {
-    const limit = req.query?.limit;
-    const offset = req.query?.offset;
+    const limit = Number(req.query?.limit);
+    const offset = Number(req.query?.offset);
     const userId = await getUserIdByRequest(req);
     const classesInfo = await getAllClassByUserId(userId, { limit, offset });
     return buildRes(res, true, classesInfo);
