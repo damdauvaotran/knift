@@ -1,12 +1,13 @@
 import config from './config';
 import { Socket } from 'socket.io';
 
-
 export class Room {
   public id: string;
   public peers: Map<string, any>;
   public io: any;
   public router: any;
+  public groupDiscuss: Map<string, Map<string, any>>;
+  public peerGroupMap: Map<string, string>;
 
   constructor(roomId: string, worker: any, io: any) {
     this.id = roomId;
@@ -21,20 +22,42 @@ export class Room {
 
     this.peers = new Map();
     this.io = io;
+    this.groupDiscuss = new Map();
+    this.peerGroupMap = new Map();
+  }
+
+  splitPeer(groupCount: number) {
+    const peerList = Array.from(this.peers);
+    let groupName: number = 1;
+    let tempGroupMap = new Map<string, any>();
+    for (let i: number = 0; i < peerList.length; i++) {
+      tempGroupMap.set(String(peerList[i]?.[0]), peerList[i]?.[1]);
+      this.peerGroupMap.set(String(peerList[i]?.[0]), String(groupName));
+      if (tempGroupMap.size === groupCount) {
+        this.groupDiscuss.set(String(groupName), tempGroupMap);
+        groupName++;
+        tempGroupMap = new Map<string, any>();
+      }
+    }
+    this.groupDiscuss.set(String(groupName), tempGroupMap);
   }
 
   addPeer(peer: any) {
     this.peers.set(peer.id, peer);
   }
 
-  getProducerListForPeer(socketId: string) {
+  getProducerListForPeer(peerId: string) {
     let producerList: any[] = [];
     this.peers.forEach((peer) => {
-      peer.producers.forEach((producer: any) => {
-        producerList.push({
-          producerId: producer.id,
+      if (peer.id !== peerId) {
+        peer.producers.forEach((producer: any) => {
+          producerList.push({
+            ...producer,
+            id: producer.id,
+            appData: producer.appData,
+          });
         });
-      });
+      }
     });
     return producerList;
   }
@@ -64,9 +87,6 @@ export class Room {
 
     transport.on('dtlsstatechange', (dtlsState: string) => {
       if (dtlsState === 'closed') {
-        console.log(
-          '---transport close--- ' + this.peers.get(socketId).name + ' closed'
-        );
         transport.close();
       }
     });
@@ -76,8 +96,9 @@ export class Room {
         '---transport close--- ' + this.peers.get(socketId).name + ' closed'
       );
     });
-    console.log('---adding transport---', transport.id);
+
     this.peers.get(socketId).addTransport(transport);
+
     return {
       params: {
         id: transport.id,
@@ -88,29 +109,33 @@ export class Room {
     };
   }
 
-  async connectPeerTransport(socketId: string, transportId: string, dtlsParameters: any) {
+  async connectPeerTransport(
+    socketId: string,
+    transportId: string,
+    dtlsParameters: any
+  ) {
     if (!this.peers.has(socketId)) return;
     await this.peers
       .get(socketId)
       .connectTransport(transportId, dtlsParameters);
   }
 
-  async produce(socketId: string, producerTransportId: string, rtpParameters: any, kind: string) {
+  async produce(
+    socketId: string,
+    producerTransportId: string,
+    rtpParameters: any,
+    kind: string
+  ) {
     // handle undefined errors
-    return new Promise(
-      async  (resolve: Function, reject: Function)=> {
-        let producer = await this.peers
-          .get(socketId)
-          .createProducer(producerTransportId, rtpParameters, kind);
-        resolve(producer.id);
-        this.broadCast(socketId, 'newProducers', [
-          {
-            producerId: producer.id,
-            producerSocketId: socketId,
-          },
-        ]);
-      }
-    );
+    return new Promise(async (resolve: Function, reject: Function) => {
+      let producer = await this.peers
+        .get(socketId)
+        .createProducer(producerTransportId, rtpParameters, kind);
+      resolve(producer.id);
+      this.broadCast(socketId, 'newProducers', [
+        { ...producer, id: producer.id, appData: producer.appData },
+      ]);
+    });
   }
 
   async consume(
@@ -134,21 +159,13 @@ export class Room {
       .get(socketId)
       .createConsumer(consumerTransportId, producerId, rtpCapabilities);
 
-    consumer.on(
-      'producerclose',
-      ()=> {
-        console.log(
-          `---consumer closed--- due to producerclose event  name:${
-            this.peers.get(socketId).name
-          } consumer_id: ${consumer.id}`
-        );
-        this.peers.get(socketId).removeConsumer(consumer.id);
-        // tell client consumer is dead
-        this.io.to(socketId).emit('consumerClosed', {
-          consumerId: consumer.id,
-        });
-      }
-    );
+    consumer.on('producerclose', () => {
+      this.peers.get(socketId).removeConsumer(consumer.id);
+      // tell client consumer is dead
+      this.io.to(socketId).emit('consumerClosed', {
+        consumerId: consumer.id,
+      });
+    });
 
     return params;
   }

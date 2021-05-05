@@ -4,7 +4,7 @@ import { getUserInfoByToken } from '../utils/request';
 import { Room } from './Room';
 import { Peer } from './Peer';
 import config from './config';
-import {addAttendance} from '../services/attendance_service'
+import { addAttendance } from '../services/attendance_service';
 import * as mediasoup from 'mediasoup';
 import { json } from 'sequelize/types';
 
@@ -26,10 +26,7 @@ const sockets: ISocket = {
     const io: Server = socketio.listen(server);
     io.sockets.on('connection', async (socket: Socket | any) => {
       socket.auth = false;
-      socket.on('stream', (data: any) => {
-        console.log(data);
-        socket.emit('receive-stream', data);
-      });
+
       socket.on('authen', async (token: any) => {
         try {
           const userInfo = await getUserInfoByToken(token);
@@ -73,22 +70,25 @@ const sockets: ISocket = {
             });
           }
 
-          addAttendance(socket.userId, parseInt(roomId, 10)).then(data=>{
-            console.log('--- insert attendance -- ' + JSON.stringify(data))
-          })
-          roomList.get(roomId).addPeer(new Peer(socket.id, name));
+          addAttendance(socket.userId, parseInt(roomId, 10))
+            // .then((data) => {
+            //   console.log('--- insert attendance -- ' + JSON.stringify(data));
+            // })
+            .catch((e) => {
+              console.log(`--already add attendance ${socket.userId}`);
+            });
+
+          roomList
+            .get(roomId)
+            .addPeer(new Peer(socket.id, String(socket.userId), socket.role));
           socket.roomId = roomId;
+          // socket.name = name;
 
           cb(roomList.get(roomId).toJson());
         }
       );
 
       socket.on('getProducers', () => {
-        console.log(
-          `---get producers--- name:${
-            roomList.get(socket.roomId).getPeers().get(socket.id).name
-          }`
-        );
         // send all the current producer to newly joined member
         if (!roomList.has(socket.roomId)) return;
         let producerList = roomList
@@ -96,15 +96,9 @@ const sockets: ISocket = {
           .getProducerListForPeer(socket.id);
 
         socket.emit('newProducers', producerList);
-        console.log(`---return producers---:${producerList}`);
       });
 
       socket.on('getRouterRtpCapabilities', (_: any, callback: Function) => {
-        console.log(
-          `---get RouterRtpCapabilities--- name: ${
-            roomList.get(socket.roomId).getPeers().get(socket.id).name
-          }`
-        );
         try {
           callback(roomList.get(socket.roomId).getRtpCapabilities());
         } catch (e) {
@@ -115,11 +109,6 @@ const sockets: ISocket = {
       });
 
       socket.on('createWebRtcTransport', async (_: any, callback: Function) => {
-        console.log(
-          `---create webrtc transport--- name: ${
-            roomList.get(socket.roomId).getPeers().get(socket.id).name
-          }`
-        );
         try {
           const { params } = await roomList
             .get(socket.roomId)
@@ -143,11 +132,6 @@ const sockets: ISocket = {
           }: { transportId: string; dtlsParameters: any },
           callback: Function
         ) => {
-          console.log(
-            `---connect transport--- name: ${
-              roomList.get(socket.roomId).getPeers().get(socket.id).name
-            }`
-          );
           if (!roomList.has(socket.roomId)) return;
           await roomList
             .get(socket.roomId)
@@ -174,11 +158,7 @@ const sockets: ISocket = {
           let producerId = await roomList
             .get(socket.roomId)
             .produce(socket.id, producerTransportId, rtpParameters, kind);
-          console.log(
-            `---produce--- type: ${kind} name: ${
-              roomList.get(socket.roomId).getPeers().get(socket.id).name
-            } id: ${producerId}`
-          );
+
           callback({
             producerId,
           });
@@ -191,8 +171,6 @@ const sockets: ISocket = {
           { consumerTransportId, producerId, rtpCapabilities }: any,
           callback: Function
         ) => {
-          console.log('consume info', producerId);
-          //TODO null handling
           let params = await roomList
             .get(socket.roomId)
             .consume(
@@ -202,12 +180,6 @@ const sockets: ISocket = {
               rtpCapabilities
             );
 
-          console.log(
-            `---consuming--- name: ${
-              roomList.get(socket.roomId) &&
-              roomList.get(socket.roomId).getPeers().get(socket.id).name
-            } prod_id:${producerId} consumer_id:${Object.keys(params)}`
-          );
           callback(params);
         }
       );
@@ -218,6 +190,10 @@ const sockets: ISocket = {
       // });
 
       socket.on('getMyRoomInfo', (_: any, cb: Function) => {
+        cb(roomList.get(socket.roomId).toJson());
+      });
+
+      socket.on('groupDiscuss', (arg: any, cb: Function) => {
         cb(roomList.get(socket.roomId).toJson());
       });
 
@@ -243,7 +219,6 @@ const sockets: ISocket = {
       });
 
       socket.on('exitRoom', async (_: any, callback: Function) => {
-        console.log('socket', socket);
         console.log(
           `---exit room--- name: ${
             roomList.get(socket.roomId) &&
