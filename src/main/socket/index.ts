@@ -34,6 +34,7 @@ const sockets: ISocket = {
           socket.auth = true;
           socket.role = userInfo.role;
           socket.userId = userInfo.id;
+          socket.name= userInfo.displayName
         } catch (e) {
           socket.disconnect('unauthorized');
         }
@@ -80,7 +81,7 @@ const sockets: ISocket = {
 
           roomList
             .get(roomId)
-            .addPeer(new Peer(socket.id, String(socket.userId), socket.role));
+            .addPeer(new Peer(socket.id, String(socket.userId), socket.name, socket.role));
           socket.roomId = roomId;
           // socket.name = name;
 

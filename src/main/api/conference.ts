@@ -5,6 +5,7 @@ import {
   getAllConference,
   getAllConferenceWithLessonId,
   createConference,
+  endConference,
 } from '../services/conference_service';
 import XLSX from 'xlsx';
 
@@ -162,6 +163,47 @@ router.post(
         startTime: trueStartTime,
         endTime: trueEndTime,
       });
+      return buildRes(res, true, conferenceInfo);
+    } catch (e) {
+      return buildRes(res, false, e.toString());
+    }
+  }
+);
+
+/**
+ * @swagger
+ *
+ * /conference/{conferenceId}/end:
+ *  post:
+ *    security:
+ *      - Bearer: []
+ *    summary: End conference
+ *    description: create lesson
+ *    tags:
+ *      - conference
+ *    produces:
+ *      - application/json
+ *    parameters:
+ *      - in: path
+ *        name: conferenceId
+ *        required: true
+ *        type: string
+ *    responses:
+ *      '200':
+ *        description: OK
+ *        schema:
+ *          type: object
+ *          $ref: '#/definitions/Conference'
+ */
+
+router.post(
+  '/conference/:conferenceId/end',
+  validateUser,
+  async (req: Request, res: Response) => {
+    try {
+      const conferenceId = req.params.conferenceId ?? '0';
+      const trueConferenceId = parseInt(conferenceId, 10);
+      const conferenceInfo = await endConference(trueConferenceId);
       return buildRes(res, true, conferenceInfo);
     } catch (e) {
       return buildRes(res, false, e.toString());

@@ -1,15 +1,17 @@
 export class Peer {
   public id: string;
   public name: string;
+  public userId: string;
   public role: string;
   public transports: Map<string, any>;
   public consumers: Map<string, any>;
   public producers: Map<string, any>;
 
-  constructor(socketId: string, name: string, role: string) {
+  constructor(socketId: string, userId: string, name: string, role: string) {
     this.id = socketId;
     this.name = name;
     this.role = role;
+    this.userId = userId;
     this.transports = new Map();
     this.consumers = new Map();
     this.producers = new Map();
@@ -29,16 +31,17 @@ export class Peer {
   async createProducer(
     producerTransportId: string,
     rtpParameters: any,
-    kind: string,
+    kind: string
   ) {
     //TODO handle null errors
     let producer = await this.transports.get(producerTransportId).produce({
       kind,
       rtpParameters,
       appData: {
-        userId: this.name,
+        userId: this.userId,
         role: this.role,
-      }
+        name: this.name
+      },
     });
 
     this.producers.set(producer.id, producer);
@@ -72,7 +75,6 @@ export class Peer {
       console.error('consume failed', error);
       return;
     }
-
 
     if (consumer.type === 'simulcast') {
       await consumer.setPreferredLayers({

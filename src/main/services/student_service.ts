@@ -15,6 +15,7 @@ export const getAllStudentFromClass = async (
   const studentList = await db.User.findAll({
     limit: trueLimit,
     offset: trueOffset,
+    attributes:["userId", "displayName", "gender", "email"],
     include: [
       {
         model: db.Class,
@@ -56,6 +57,8 @@ export const getAllStudentFromClass = async (
     students: studentList.map((lesson: any) => ({
       userId: lesson.userId,
       displayName: lesson.displayName,
+      gender: lesson.gender,
+      email: lesson.email,
     })),
     limit: trueLimit,
     offset: trueOffset,
