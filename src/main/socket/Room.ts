@@ -171,7 +171,7 @@ export class Room {
   }
 
   async removePeer(socketId: string) {
-    this.peers.get(socketId).close();
+    console.log("remove peer called"    this.peers.get(socketId).close();
     this.peers.delete(socketId);
   }
 

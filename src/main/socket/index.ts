@@ -56,6 +56,7 @@ const sockets: ISocket = {
             console.log('---created room--- ', roomId);
             let worker = await getMediasoupWorker();
             roomList.set(roomId, new Room(roomId, worker, io));
+            socket.roomId = roomId
             callback(roomId);
           }
         }
@@ -84,7 +85,6 @@ const sockets: ISocket = {
             .addPeer(new Peer(socket.id, String(socket.userId), socket.name, socket.role));
           socket.roomId = roomId;
           // socket.name = name;
-
           cb(roomList.get(roomId).toJson());
         }
       );
@@ -95,7 +95,6 @@ const sockets: ISocket = {
         let producerList = roomList
           .get(socket.roomId)
           .getProducerListForPeer(socket.id);
-
         socket.emit('newProducers', producerList);
       });
 
