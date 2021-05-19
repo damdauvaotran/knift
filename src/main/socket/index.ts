@@ -34,7 +34,7 @@ const sockets: ISocket = {
           socket.auth = true;
           socket.role = userInfo.role;
           socket.userId = userInfo.id;
-          socket.name= userInfo.displayName
+          socket.name = userInfo.displayName;
         } catch (e) {
           socket.disconnect('unauthorized');
         }
@@ -56,7 +56,7 @@ const sockets: ISocket = {
             console.log('---created room--- ', roomId);
             let worker = await getMediasoupWorker();
             roomList.set(roomId, new Room(roomId, worker, io));
-            socket.roomId = roomId
+            socket.roomId = roomId;
             callback(roomId);
           }
         }
@@ -82,7 +82,14 @@ const sockets: ISocket = {
 
           roomList
             .get(roomId)
-            .addPeer(new Peer(socket.id, String(socket.userId), socket.name, socket.role));
+            .addPeer(
+              new Peer(
+                socket.id,
+                String(socket.userId),
+                socket.name,
+                socket.role
+              )
+            );
           socket.roomId = roomId;
           // socket.name = name;
           cb(roomList.get(roomId).toJson());
@@ -96,6 +103,36 @@ const sockets: ISocket = {
           .get(socket.roomId)
           .getProducerListForPeer(socket.id);
         socket.emit('newProducers', producerList);
+      });
+
+      socket.on('groupDiscuss', ({ count }: { count: number }) => {
+        // send all the current producer to newly joined member
+        if (!roomList.has(socket.roomId)) return;
+        roomList.get(socket.roomId).splitPeer(count);
+        socket.broadcast.emit('startGroupDiscuss');
+        socket.emit('startGroupDiscuss');
+      });
+
+      socket.on('closeGroupDiscuss', () => {
+        socket.broadcast.emit('endGroupDiscuss');
+        socket.emit('endGroupDiscuss');
+      });
+
+      socket.on('getGroup', () => {
+        // send all the current producer to newly joined member
+        if (!roomList.has(socket.roomId)) return;
+        let peerGroup = roomList.get(socket.roomId).getGroup(socket.id);
+        socket.emit('newGroup', peerGroup);
+      });
+
+      socket.on('getRoomInfo', (callback: Function) => {
+        try {
+          callback(roomList.get(socket.roomId).getRoomInfo());
+        } catch (e) {
+          callback({
+            error: e.message,
+          });
+        }
       });
 
       socket.on('getRouterRtpCapabilities', (_: any, callback: Function) => {
@@ -190,10 +227,6 @@ const sockets: ISocket = {
       // });
 
       socket.on('getMyRoomInfo', (_: any, cb: Function) => {
-        cb(roomList.get(socket.roomId).toJson());
-      });
-
-      socket.on('groupDiscuss', (arg: any, cb: Function) => {
         cb(roomList.get(socket.roomId).toJson());
       });
 

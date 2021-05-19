@@ -1,12 +1,15 @@
 import config from './config';
 import { Socket } from 'socket.io';
+import { Peer } from './Peer';
+import { Role } from '../types/common';
 
 export class Room {
   public id: string;
+  public isGroupDiscuss: boolean = false;
   public peers: Map<string, any>;
   public io: any;
   public router: any;
-  public groupDiscuss: Map<string, Map<string, any>>;
+  public groupDiscuss: Map<string, any>;
   public peerGroupMap: Map<string, string>;
 
   constructor(roomId: string, worker: any, io: any) {
@@ -29,17 +32,45 @@ export class Room {
   splitPeer(groupCount: number) {
     const peerList = Array.from(this.peers);
     let groupName: number = 1;
-    let tempGroupMap = new Map<string, any>();
+    let tempGroupMap = [];
     for (let i: number = 0; i < peerList.length; i++) {
-      tempGroupMap.set(String(peerList[i]?.[0]), peerList[i]?.[1]);
+      if (peerList[i]?.[1].role !== Role.STUDENT) {
+        continue;
+      }
+      tempGroupMap.push(peerList[i]?.[1]);
       this.peerGroupMap.set(String(peerList[i]?.[0]), String(groupName));
-      if (tempGroupMap.size === groupCount) {
+      if (tempGroupMap.length === groupCount) {
         this.groupDiscuss.set(String(groupName), tempGroupMap);
         groupName++;
-        tempGroupMap = new Map<string, any>();
+        tempGroupMap = [];
       }
     }
     this.groupDiscuss.set(String(groupName), tempGroupMap);
+  }
+
+  getRoomInfo() {
+    return {
+      roomId: this.id,
+      isGroupDiscuss: this.isGroupDiscuss,
+    };
+  }
+
+  getGroup(peerId: string): any[] {
+    const groupList = Array.from(this.groupDiscuss);
+    console.log(JSON.stringify(groupList));
+    for (let i: number = 0; i < groupList.length; i++) {
+      if (
+        groupList[i]?.[1].filter((peer: Peer) => peer.id === peerId).length > 0
+      ) {
+        return groupList[i]?.[1].map((peer: Peer) => ({
+          id: peer.id,
+          name: peer.name,
+          role: peer.role,
+          userId: peer.userId,
+        }));
+      }
+    }
+    return [];
   }
 
   addPeer(peer: any) {
@@ -171,7 +202,7 @@ export class Room {
   }
 
   async removePeer(socketId: string) {
-    console.log("remove peer called"    this.peers.get(socketId).close();
+    this.peers.get(socketId).close();
     this.peers.delete(socketId);
   }
 
