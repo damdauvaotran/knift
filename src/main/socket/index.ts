@@ -62,6 +62,10 @@ const sockets: ISocket = {
         }
       );
 
+      socket.on("endCall", ()=>{
+        socket.broadcast.emit('closeConference');
+      })
+
       socket.on(
         'join',
         ({ roomId, name }: { roomId: string; name: string }, cb: Function) => {
