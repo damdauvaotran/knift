@@ -1,5 +1,4 @@
 import config from './config';
-import { Socket } from 'socket.io';
 import { Peer } from './Peer';
 import { Role } from '../types/common';
 
