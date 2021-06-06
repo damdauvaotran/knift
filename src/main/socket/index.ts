@@ -62,9 +62,11 @@ const sockets: ISocket = {
         }
       );
 
-      socket.on("endCall", ()=>{
-        socket.broadcast.emit('closeConference');
-      })
+      socket.on('endCall', () => {
+        roomList
+        .get(socket.roomId)
+        ?.broadCast(socket.id, 'closeConference', {});
+      });
 
       socket.on(
         'join',
@@ -113,12 +115,16 @@ const sockets: ISocket = {
         // send all the current producer to newly joined member
         if (!roomList.has(socket.roomId)) return;
         roomList.get(socket.roomId).splitPeer(count);
-        socket.broadcast.emit('startGroupDiscuss');
+        roomList
+          .get(socket.roomId)
+          ?.broadCast(socket.id, 'startGroupDiscuss', {});
         socket.emit('startGroupDiscuss');
       });
 
       socket.on('closeGroupDiscuss', () => {
-        socket.broadcast.emit('endGroupDiscuss');
+        roomList
+        .get(socket.roomId)
+        ?.broadCast(socket.id, 'endGroupDiscuss', {});
         socket.emit('endGroupDiscuss');
       });
 
