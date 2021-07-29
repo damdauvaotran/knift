@@ -1,4 +1,5 @@
 import db from '../models';
+import { Op } from 'sequelize';
 import conference_data from '../seeding/conference_data';
 import { where } from 'sequelize/types';
 
@@ -42,6 +43,11 @@ export const getAttendanceList = async (conferenceId: number) => {
       },
       attributes: [],
     },
+    where: {
+      roleId: {
+        [Op.ne]: 2,
+      },
+    },
     attributes: ['userId', 'displayName'],
     raw: true,
   });
@@ -59,7 +65,7 @@ export const getAttendanceList = async (conferenceId: number) => {
     return {
       ...student,
       attend: false,
-      attendTime: ''
+      attendTime: '',
     };
   });
 
