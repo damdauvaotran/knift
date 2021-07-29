@@ -7,7 +7,6 @@ export const buildRes = (res: Response, success: boolean, data: any) => {
       data,
     });
   }
-  console.error(data);
   return res.json({
     success,
     message: data,

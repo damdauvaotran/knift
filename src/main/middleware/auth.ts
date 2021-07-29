@@ -8,6 +8,8 @@ import {
   IJWTBody,
 } from '../utils/request';
 
+import { getAsync } from '../cached';
+
 const { User } = db;
 
 const jwtPrivateKey = env.PRIVATE_KEY_JWT;
@@ -17,6 +19,13 @@ export const validateUser = (req: Request, res: Response, next: Function) => {
     const authToken = getTokenByRequest(req);
     try {
       // Keep try catch logic
+      const tokenInBlacklist = await getAsync(authToken);
+      if (tokenInBlacklist !== null) {
+        res.json({
+          success: false,
+          message: 'You do no have permission to perform this action',
+        });
+      }
       const id = await getUserIdByToken(String(authToken));
       const requestUser = await User.findOne({ where: { userId: id } });
       if (requestUser) {

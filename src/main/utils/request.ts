@@ -20,14 +20,18 @@ export const getUserIdByToken = async (token: string = '') => {
   return id;
 };
 
-export const getUserInfoByToken = async (token: string = '') : Promise<IUserInfo>=> {
+export const getUserInfoByToken = async (
+  token: string = ''
+): Promise<IUserInfo> => {
   const decodedData = await jwt.verify(token, jwtPrivateKey);
   const info = ((<IJWTBody>decodedData) as any) as IUserInfo;
   return info;
 };
 
-export const getTokenByRequest = (req: Request) =>
-  req.headers.authorization && req.headers.authorization.replace('Bearer ', '');
+export const getTokenByRequest = (req: Request): string =>
+  (req.headers.authorization &&
+    req.headers.authorization.replace('Bearer ', '')) ??
+  '';
 
 export const getUserIdByRequest = (req: Request) => {
   const token = getTokenByRequest(req);
